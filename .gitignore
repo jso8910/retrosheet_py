@@ -1,0 +1,8 @@
+__pycache__/
+*.EVE
+*.EVN
+*.txt
+*.EVA
+*.ROS
+*.EVB
+downloads/
