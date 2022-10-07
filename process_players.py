@@ -1,9 +1,10 @@
 import csv
+from typing import Any, Dict
 import requests
 
 
-def proc_players():
-    data = {}
+def proc_players() -> Dict[str, Dict[str, Any]]:
+    data: Dict[str, Dict[str, Any]] = {}
     res = requests.get("https://www.retrosheet.org/BIOFILE.TXT")
     # TODO: make sure this folder is always created before this function is run
     with open("downloads/BIOFILE.txt", "w") as out:

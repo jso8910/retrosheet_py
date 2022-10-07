@@ -2,8 +2,8 @@
 In this file lies horrors
 """
 
-from aenum import IntFlag
-from aenum import auto
+from enum import IntFlag, auto
+
 
 class Pitch(IntFlag):
     """
@@ -38,32 +38,34 @@ class Pitch(IntFlag):
     """
     # Use flags (eg 0b00010000 or whatever) for stuff like pickoff by catcher. Look for examples of the 7 things at the top of the pitches record thing to see if they should be flags
     # Flags
-    CATCHER_PICK    = 0b100000000	# "Catcher pickoff after the pitch"
-    CATCHER_BLOCK   = 0b010000000	# "Catcher had to block the pitch"
-    RUNNER_GOING   =  0b001000000	# "Runner(s) going on the pitch"
-    PLAY_NO_BATTER =  0b000100000	# "Play happened on this pitch where the batter wasn't involved"
-    B = auto()	# "Ball"
-    C = auto()	# "Called strike"
-    F = auto()	# "Foul"
-    H = auto()	# "Hit by pitch"
-    I = auto()	# "Pitched intentional ball"
-    K = auto()	# "Strike, unknown type"
-    L = auto()	# "Foul bunt"
-    M = auto()	# "Missed bunt"
-    N = auto()	# "No pitch (balk or interference)"
-    O = auto()	# "Bunt foul tip"
-    P = auto()	# "Pitchout"
-    Q = auto()	# "Swing on pitchout"
-    R = auto()	# "Foul on pitchout"
-    S = auto()	# "Swinging strike"
-    T = auto()	# "Foul tip"
-    U = auto()	# "Unknown or missed pitch"
-    V = auto()	# "Called ball because pitcher went to his mouth or no-pitch intentional ball"
-    X = auto()	# "Ball put into play by batter"
-    Y = auto()	# "Ball put into play on pitchout"
+    CATCHER_PICK = 0b100000000  # "Catcher pickoff after the pitch"
+    CATCHER_BLOCK = 0b010000000  # "Catcher had to block the pitch"
+    RUNNER_GOING = 0b001000000  # "Runner(s) going on the pitch"
+    # "Play happened on this pitch where the batter wasn't involved"
+    PLAY_NO_BATTER = 0b000100000
+    B = auto()  # "Ball"
+    C = auto()  # "Called strike"
+    F = auto()  # "Foul"
+    H = auto()  # "Hit by pitch"
+    I = auto()  # "Pitched intentional ball"
+    K = auto()  # "Strike, unknown type"
+    L = auto()  # "Foul bunt"
+    M = auto()  # "Missed bunt"
+    N = auto()  # "No pitch (balk or interference)"
+    O = auto()  # "Bunt foul tip"
+    P = auto()  # "Pitchout"
+    Q = auto()  # "Swing on pitchout"
+    R = auto()  # "Foul on pitchout"
+    S = auto()  # "Swinging strike"
+    T = auto()  # "Foul tip"
+    U = auto()  # "Unknown or missed pitch"
+    V = auto()  # "Called ball because pitcher went to his mouth or no-pitch intentional ball"
+    X = auto()  # "Ball put into play by batter"
+    Y = auto()  # "Ball put into play on pitchout"
     PO_1 = auto()   # Pickoff 1B
     PO_2 = auto()   # Pickoff 2B
     PO_3 = auto()   # Pickoff 3B
+
 
 class PlayFlags(IntFlag):
     # Contains errors for the batter (ie E4, E5, E3, E2, E1, E6, E7, E8, E9, no error) and modifiers (eg throwing)
@@ -76,10 +78,11 @@ class PlayFlags(IntFlag):
 
     # Plays
     OUT = auto()            # Use this on each play to show there was an out. Bitwise OR with fielders involved IN THAT OUT. WITH MULTIPLE OUTS, USE A SEPARATE PART OF THE ARRAY
-    FIELDERSCHOICE = auto() # Out not necessarily made, used for throwing a player out
+    FIELDERSCHOICE = auto()  # Out not necessarily made, used for throwing a player out
     K = auto()              # Strikeout
     NP = auto()             # No play, substitution
-    INTERFERENCE = auto()   # Followed by an error modifier to say who did the interference. Implies batter advance to first. Notated by C/E$
+    # Followed by an error modifier to say who did the interference. Implies batter advance to first. Notated by C/E$
+    INTERFERENCE = auto()
     SINGLE = auto()
     DOUBLE = auto()
     TRIPLE = auto()
@@ -109,7 +112,8 @@ class PlayFlags(IntFlag):
 
     # Multi-purpose
     E = auto()              # Error (remember to bitwise OR with position). This works as a modifier AND a play (in the case of an error allowing the batter to reach)
-    TH = auto()             # Throw. Normally paired with error to show it's a throwing error.
+    # Throw. Normally paired with error to show it's a throwing error.
+    TH = auto()
 
     # Modifiers
     THM = auto()            # Throw to base modifier
@@ -130,30 +134,36 @@ class PlayFlags(IntFlag):
     F = auto()              # Fly
     FDP = auto()            # Fly into double play
     FINT = auto()           # Fan interference
-    FL = auto()             # Foul (I assume for popups, flyballs, bunts, etc. probably only when they end the AB)
+    # Foul (I assume for popups, flyballs, bunts, etc. probably only when they end the AB)
+    FL = auto()
     FO = auto()             # Forceout
     G = auto()              # Groundball
     GDP = auto()            # GIDP
     GTP = auto()            # Grounded into triple play lmfaooooo
     IF = auto()             # Infield fly rule
-    INT = auto()            # Interference (does this mean an out? I assume it does. TODO Look for examples of it)
-    IPHR = auto()           # Inside the park homerun (exists alongside H$ or HR$ to indicate the position)
+    # Interference (does this mean an out? I assume it does. TODO Look for examples of it)
+    INT = auto()
+    # Inside the park homerun (exists alongside H$ or HR$ to indicate the position)
+    IPHR = auto()
     L = auto()              # Linedrive
     LDP = auto()            # Lined into double play
     LTP = auto()            # Lined into triple play
-    MREV = auto()           # Manager review of call on field (TODO I can't find any examples of this being used)
-    NDP = auto()            # No double play credited. I don't know why, can't find examples in 2021 in the 4 teams I looked at
+    # Manager review of call on field (TODO I can't find any examples of this being used)
+    MREV = auto()
+    # No double play credited. I don't know why, can't find examples in 2021 in the 4 teams I looked at
+    NDP = auto()
     OBS = auto()            # Obstruction (fielder obstructing a runner). Look for examples
     P = auto()              # Pop fly
-    PASS = auto()           # Runner passed another runner and was called out (TODO look for examples)
-    R = auto()              # R$. Relay from initial fielder to $ with no out. TODO look for examples
+    # Runner passed another runner and was called out (TODO look for examples)
+    PASS = auto()
+    # R$. Relay from initial fielder to $ with no out. TODO look for examples
+    R = auto()
     RINT = auto()           # Runner interference
     SF = auto()             # Sacrifice fly
     SH = auto()             # Sacrifice hit (bunt)
     TP = auto()             # Unspecified triple play
     UINT = auto()           # Umpire interference
     UREV = auto()           # Umpire review of call on field (TODO find examples)
-
 
     # Positions
     PITCHER = auto()
@@ -179,7 +189,7 @@ class PlayFlags(IntFlag):
     SECOND_END = auto()
     THIRD_END = auto()
 
-    ## Locations
+    # Locations
     """
     For these locations, positions are replaced
     1 is replaced with P
@@ -192,7 +202,8 @@ class PlayFlags(IntFlag):
     """
     # Foul balls
     # Left side/center
-    CATCHERF_LOC = auto()       # Foul ball near catcher NOTE I NEED TO MANAULLY CHANGE 2F TO CATCHERF_LOC, NO SIMPLE REPLACEMENT
+    # Foul ball near catcher NOTE I NEED TO MANAULLY CHANGE 2F TO CATCHERF_LOC, NO SIMPLE REPLACEMENT
+    CATCHERF_LOC = auto()
     CB3F_LOC = auto()           # Foul ball between C and 3Bman
     B3F_LOC = auto()            # Foul ball behind/around 3Bman
     B3DF_LOC = auto()           # Foul ball deep behind 3Bman
