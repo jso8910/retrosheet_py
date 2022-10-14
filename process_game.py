@@ -61,8 +61,8 @@ class Game:
         for line in self.game[game_idx:]:
             if line[1:4] == "adj":
                 sub_line_before = False
-                after = len(self.plate_appearances) - \
-                    1 if len(self.plate_appearances) != 0 else None
+                after = len(self.plate_appearances) if len(
+                    self.plate_appearances) != 0 else None
                 if line[0] == "b":
                     self.adj.append({"type": "batter_hand", "player": line.split(
                         ',')[1], "hand": line.split(',')[2], "after_pa_idx": after})
@@ -80,13 +80,13 @@ class Game:
                 self.earned_runs[line.split(',')[2]] = int(line.split(',')[3])
             elif line[0:3] == "com":
                 sub_line_before = False
-                after = len(self.plate_appearances) - \
-                    1 if len(self.plate_appearances) != 0 else None
+                after = len(self.plate_appearances) if len(
+                    self.plate_appearances) != 0 else None
                 self.comments.append({"comment": ','.join(line.replace(
                     '"', '').split(',')[1:]), "after_pa_idx": after})
             elif line[0:3] == "sub":
-                after = len(self.plate_appearances) - \
-                    1 if len(self.plate_appearances) != 0 else None
+                after = len(self.plate_appearances) if len(
+                    self.plate_appearances) != 0 else None
                 sub_line_before = True
                 if line.split(',')[3] == "0":
                     self.home_lineup[int(line.split(',')[4])].append({"pid": line.split(',')[1], "pname": line.split(',')[2].replace(

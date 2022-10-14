@@ -91,6 +91,7 @@ with open("2021CHN.EVN", "r") as f:
     game.process_game()
     create_tables()
     create_game(game)
+    print(game.plate_appearances[21][0].batter)
     # print([g for g in game.plate_appearances[:5]])
     # __import__('pprint').pprint([[vars(g) for g in p] for p in game.plate_appearances[:5]])
     # __import__('pprint').pprint(game.comments)
