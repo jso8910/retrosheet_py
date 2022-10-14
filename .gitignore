@@ -6,3 +6,7 @@ __pycache__/
 *.ROS
 *.EVB
 downloads/
+venv/
+.env
+*.sqlite
+!requirements.txt

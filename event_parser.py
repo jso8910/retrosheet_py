@@ -275,7 +275,6 @@ class Event:
     def __init__(self, event_string: str):
         # Event string: list of lines of events. Normally just one line
         self.event_string = event_string
-        # TODO however I end up splitting it into lines, change this so it takes the first line or really any line
         self.inning = int(self.event_string.split(',')[1])
         self.half_is_top = int(self.event_string.split(',')[2]) != 1
         self.batter = self.event_string.split(',')[3]
@@ -348,7 +347,7 @@ class Event:
                 continue
         self.pitches = pitch_list
 
-# event = Event("play,3,0,baezj001,02,CSF1.X,FC5/G56S.2-H(NR)(UR);BX2(5E3)(E2/TH)")
-# import pprint
-# pprint.pprint(vars(event.play[0]))
+
+# event = Event("play,3,0,baezj001,02,CSF1.X,64(1)3.1X2")
+# pprint.pprint(vars(event.play))
 # pprint.pprint(vars(event))
