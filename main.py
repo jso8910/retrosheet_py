@@ -31,8 +31,7 @@ def main():
                 game = Game(g, fname=filename,
                             deduced=deduced, postseason=postseason)
                 game.process_game()
-                # db.create_game(game)
-        # fname = filename
+                db.create_game(game)
 
 
 main()

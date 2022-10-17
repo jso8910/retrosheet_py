@@ -74,7 +74,6 @@ class PlayFlags(IntFlag):
     # Hit type/modifier as in Groundball, line drive, sac fly
     # Outcomes as in flyout, putout, gidp, 2b, 3b, hr, single, error, fielders choice, etc (defined in https://www.retrosheet.org/eventfile.htm)
     # Notation for multiple outs is just an list of outs
-    # TODO: DOESNT SUPPORT K+EVENT, W+EVENT, or IW+EVENT (aka I+EVENT) YET
 
     # Plays
     OUT = auto()            # Use this on each play to show there was an out. Bitwise OR with fielders involved IN THAT OUT. WITH MULTIPLE OUTS, USE A SEPARATE PART OF THE ARRAY

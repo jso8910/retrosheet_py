@@ -256,9 +256,9 @@ class Play:
                         play_enum |= PlayFlags.INVALID_LOC
                 elif modifier.startswith(("G", "L", "P", "F", "B")) and len(modifier) == 1:
                     play_enum |= PlayFlags[modifier[:1]]
-                elif modifier.startswith(("BG", "BP", "BL")) and len(modifier) == 2:
+                elif modifier.startswith(("BG", "BP", "BL", "BF")) and len(modifier) == 2:
                     play_enum |= PlayFlags[modifier[:2]]
-                elif modifier.startswith(("BG", "BP", "BL")) and modifier[2].isdigit():
+                elif modifier.startswith(("BG", "BP", "BL", "BF")) and modifier[2].isdigit():
                     play_enum |= PlayFlags[modifier[:2]]
                     loc_code = modifier[2:]
                     if loc_code == "2F":
