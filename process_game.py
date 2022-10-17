@@ -19,13 +19,12 @@ Make sure to pay attention to this!!!
 Find a way to use something like an enum for things with set possible values (eg fieldcond, precip, sky, winddir, pitch_detail, etc)
 """
 
-from itertools import groupby
 from typing import Callable, Dict
 from event_parser import Event
 
 
 class Game:
-    def __init__(self, game: list[str]):
+    def __init__(self, game: list[str], fname: str, postseason: bool = False, deduced: bool = False):
         # TODO: Along with each event, keep the game state (where are there runners, lineup with substitutes, fielding positions, score, # of hits, etc) with it. Maybe use a tuple
         self.id: str = game[0].split(',')[1]
         self.game = game  # line array of the game, starting with "id" and ending with the line right before the next id
@@ -46,6 +45,9 @@ class Game:
         self.adj: list[Dict[str, str | int | None]] = []
         # 2D array of events (you might have multiple events per plate appearance)
         self.plate_appearances: list[list[Event]] = []
+        self.postseason = postseason
+        self.deduced = deduced
+        self.fname = fname
 
     def process_game(self):
         """
@@ -55,9 +57,6 @@ class Game:
         game_idx = self.process_lineups(lineup_idx)
         play_lines = []
         sub_line_before = False
-        # for line in self.game[game_idx:]:
-        #     if line.endswith("NP"):
-        #         print(line)
         for line in self.game[game_idx:]:
             if line[1:4] == "adj":
                 sub_line_before = False
@@ -77,9 +76,10 @@ class Game:
                         int(line.split(',')[1])), "ba_pos": line.split(',')[2], "after_pa_idx": after})
             elif line[0:4] == "data":
                 sub_line_before = False
-                self.earned_runs[line.split(',')[2]] = int(line.split(',')[3])
+                self.earned_runs[line.split(',')[2]] = int(
+                    line.split(',')[3].split(' ')[0])
             elif line[0:3] == "com":
-                sub_line_before = False
+                # sub_line_before = False
                 after = len(self.plate_appearances) if len(
                     self.plate_appearances) != 0 else None
                 self.comments.append({"comment": ','.join(line.replace(
@@ -94,34 +94,30 @@ class Game:
                 else:
                     self.away_lineup[int(line.split(',')[4])].append({"pid": line.split(',')[1], "pname": line.split(',')[2].replace(
                         "\"", ""), "lineup_num": int(line.split(',')[4]), "pos": int(line.split(',')[5]), "after": after})
-            elif line[0:4] == "play" and play_lines:
-                # Check to see if the name is the same (ie same plate appearance)
-                if line.split(',')[3] == play_lines[-1].split(',')[3] or sub_line_before:
-                    temp_line = line.split(',')
-                    temp_line[5] = temp_line[5].replace('..', '.N.')
-                    if temp_line[5].startswith('.'):
-                        # Make the pitch a no-pitch so there isn't an error
-                        temp_line[5] = "N" + temp_line[5]
-                    line = ",".join(temp_line)
-                    play_lines.append(line)
-                    sub_line_before = False
-                else:
-                    self.plate_appearances.append(
-                        [Event(p) for p in play_lines])
-                    play_lines = [line]
-                    sub_line_before = False
-            elif line[0:4] == "play" and not play_lines:
+            elif line[0:4] == "play":
                 temp_line = line.split(',')
-                temp_line[5] = temp_line[5].replace('..', '.N.')
+                temp_line[5] = temp_line[5].replace('"', '').replace("'", '')
+                while '..' in temp_line[5]:
+                    temp_line[5] = temp_line[5].replace('..', '.N.')
                 if temp_line[5].startswith('.'):
                     # Make the pitch a no-pitch so there isn't an error
                     temp_line[5] = "N" + temp_line[5]
                 line = ",".join(temp_line)
-                sub_line_before = False
-                play_lines.append(line)
+                if play_lines and (line.split(',')[3] == play_lines[-1].split(',')[3] or sub_line_before):
+                    play_lines.append(line)
+                    sub_line_before = False
+                elif play_lines:
+                    self.plate_appearances.append(
+                        [Event(p, self.fname) for p in play_lines])
+                    play_lines = [line]
+                    sub_line_before = False
+                else:
+                    sub_line_before = False
+                    play_lines.append(line)
         # Just in case a play ended the game file and not a data
         if play_lines:
-            self.plate_appearances.append([Event(p) for p in play_lines])
+            self.plate_appearances.append(
+                [Event(p, self.fname) for p in play_lines])
 
     def process_lineups(self, start_idx: int) -> int:
         for index, line in enumerate(self.game[start_idx:]):
@@ -188,6 +184,14 @@ class Info:
         self.winning_pitcher: str | None = None
         self.losing_pitcher: str | None = None
         self.save: str | None = None
+
+    def old_name_to_new(self, old_name: str) -> str:
+        with open("data/CurrentNames.csv", 'r') as f:
+            file = [line.rstrip().split(',') for line in f.readlines()]
+            for line in file:
+                if old_name == line[1]:
+                    return line[0]
+            return old_name
 
     def set_variable(self, ident: str, value: str):
         vars: dict[str, Callable[[str], None]] = {
@@ -260,10 +264,10 @@ class Info:
         self.date = date
 
     def _set_home(self, home: str):
-        self.home = home
+        self.home = self.old_name_to_new(home)
 
     def _set_away(self, away: str):
-        self.away = away
+        self.away = self.old_name_to_new(away)
 
     def _set_ump_home(self, ump: str):
         self.umps['home'] = ump if ump != "(none)" else None
@@ -334,22 +338,3 @@ class Info:
             self.windspeed = speed_int
         else:
             self.windspeed = None
-
-
-# NOTE SAMPLE CODE. Requires downloading 2021CHN.EVN
-
-with open("2021CHN.EVN", "r") as f:
-    # Use this code in process_season.py
-    file = [line.rstrip() for line in f.readlines()]
-    i = (list(group)
-         for _, group in groupby(file, lambda x: x.startswith("id,")))
-    season = [a + b for a, b in zip(i, i)]
-    game = Game(season[0])
-    game.process_game()
-    # print([g for g in game.plate_appearances[:5]])
-    # __import__('pprint').pprint([[vars(g) for g in p] for p in game.plate_appearances[:5]])
-    # __import__('pprint').pprint(game.comments)
-    # __import__('pprint').pprint(vars(game.plate_appearances[20][0]))
-    # __import__('pprint').pprint(game.home_lineup)
-    # __import__('pprint').pprint(game.away_lineup)
-    # __import__('pprint').pprint(vars(game.info))

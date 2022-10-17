@@ -5,8 +5,12 @@ __pycache__/
 *.EVA
 *.ROS
 *.EVB
+*.EDA
+*.EDN
+*.EVF
 downloads/
 venv/
 .env
 *.sqlite
 !requirements.txt
+!data/*

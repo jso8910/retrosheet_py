@@ -38,11 +38,11 @@ class Pitch(IntFlag):
     """
     # Use flags (eg 0b00010000 or whatever) for stuff like pickoff by catcher. Look for examples of the 7 things at the top of the pitches record thing to see if they should be flags
     # Flags
-    CATCHER_PICK = 0b100000000  # "Catcher pickoff after the pitch"
-    CATCHER_BLOCK = 0b010000000  # "Catcher had to block the pitch"
-    RUNNER_GOING = 0b001000000  # "Runner(s) going on the pitch"
+    CATCHER_PICK = auto()  # "Catcher pickoff after the pitch"
+    CATCHER_BLOCK = auto()  # "Catcher had to block the pitch"
+    RUNNER_GOING = auto()  # "Runner(s) going on the pitch"
     # "Play happened on this pitch where the batter wasn't involved"
-    PLAY_NO_BATTER = 0b000100000
+    PLAY_NO_BATTER = auto()
     B = auto()  # "Ball"
     C = auto()  # "Called strike"
     F = auto()  # "Foul"
@@ -116,6 +116,11 @@ class PlayFlags(IntFlag):
     TH = auto()
 
     # Modifiers
+    INVALID_MODIFIER = auto()
+    U = auto()              # Uncleanly fielded
+    # Probably just a bunt. Not 100% sure but it's in front of a location modifier
+    B = auto()
+    BF = auto()             # Bunt foul? Not 100% sure, but I encountered this in the play "K/BF" so I assume that it's a foul bunt tbh
     THM = auto()            # Throw to base modifier
     AP = auto()             # Appeal play (I think this means out? Check this NOTE)
     BGDP = auto()           # Bunt GIDP
@@ -133,6 +138,7 @@ class PlayFlags(IntFlag):
     DP = auto()             # Unspecified double play
     F = auto()              # Fly
     FDP = auto()            # Fly into double play
+    BFDP = auto()           # Bunt flied into double play
     FINT = auto()           # Fan interference
     # Foul (I assume for popups, flyballs, bunts, etc. probably only when they end the AB)
     FL = auto()
@@ -200,11 +206,19 @@ class PlayFlags(IntFlag):
     6 is replaced with SS
     etc
     """
+    INVALID_LOC = auto()        # For when retrosheet decides to be stupid
     # Foul balls
+    # Foul balls that are inexplicably not on the chart
+    # Foul ball in front of (or maybe slightly behind) 3b. Not on the chart :/
+    B3SF_LOC = auto()
+    B1SF_LOC = auto()           # Foul ball in front of 1b. Not on the chart :/
+    B3L_LOC = auto()            # Behind 1B on the line. Not on the chart.
+    B1L_LOC = auto()            # Behind 1B on the line. Not on the chart.
     # Left side/center
     # Foul ball near catcher NOTE I NEED TO MANAULLY CHANGE 2F TO CATCHERF_LOC, NO SIMPLE REPLACEMENT
     CATCHERF_LOC = auto()
     CB3F_LOC = auto()           # Foul ball between C and 3Bman
+
     B3F_LOC = auto()            # Foul ball behind/around 3Bman
     B3DF_LOC = auto()           # Foul ball deep behind 3Bman
     LFLSF_LOC = auto()          # Foul ball in shallow left fielder territory
@@ -224,7 +238,7 @@ class PlayFlags(IntFlag):
     PS_LOC = auto()             # In front of mound (pitcher shallow)
     CB1_LOC = auto()            # Between catcher and 1B
 
-    P3B_LOC = auto()            # 3B side of the mound
+    PB3_LOC = auto()            # 3B side of the mound
     P_LOC = auto()              # The mound lol
     PB1_LOC = auto()            # 1B side of mound
 

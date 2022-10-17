@@ -58,6 +58,9 @@ class GameDB(Base):
     comments = Column(String())  # Actually a dict/array
     adj = Column(String())   # Actually a dict/array
     plate_appearances = relationship("PA", backref="game")
+    postseason = Column(Boolean())
+    deduced = Column(Boolean())
+    fname = Column(String())
 
 
 class PA(Base):
@@ -78,3 +81,12 @@ class EventDB(Base):
     count_of_play = Column(String())
     pitches = Column(String())      # Actually an array of ints
     play = relationship("PlayDB", uselist=False, backref="event")
+
+
+class Player(Base):
+    __tablename__ = "Player"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    player_id = Column(String())
+    first_name = Column(String())
+    last_name = Column(String())
+    nickname = Column(String())
