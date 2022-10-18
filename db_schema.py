@@ -77,7 +77,7 @@ class EventDB(Base):
     event_string = Column(String())
     inning = Column(Integer)
     half_is_top = Column(Boolean())
-    batter = Column(String())
+    batter_id = Column(String(), ForeignKey("Player.player_id"))
     count_of_play = Column(String())
     pitches = Column(String())      # Actually an array of ints
     play = relationship("PlayDB", uselist=False, backref="event")
@@ -87,6 +87,7 @@ class Player(Base):
     __tablename__ = "Player"
     id = Column(Integer, primary_key=True, autoincrement=True)
     player_id = Column(String())
+    events = relationship("EventDB", backref="batter")
     first_name = Column(String())
     last_name = Column(String())
     nickname = Column(String())

@@ -25,6 +25,7 @@ class DB:
         self.connection = self.engine.connect()
         self.session = Session(self.engine)
         self.metadata = db.MetaData()
+        self.players = {}
 
     def create_tables(self):
         if os.path.exists("retrosheet.sqlite"):
@@ -40,8 +41,14 @@ class DB:
         for pid, data in players_dict.items():
             player_obj = Player(
                 player_id=pid, first_name=data['FIRST'], last_name=data['LAST'], nickname=data['NICKNAME'])
-            self.session.add(player_obj)
+            self.players[pid] = player_obj
+        #     self.session.add(player_obj)
 
+        # self.session.commit()
+
+    def commit_players(self):
+        for _, item in self.players.items():
+            self.session.add(item)
         self.session.commit()
 
     def create_game(self, game: Game):
@@ -82,7 +89,8 @@ class DB:
                         batter_fielders=str(
                         [int(fielder) for fielder in play.batter_fielders]))
                 event_obj = EventDB(event_string=event.event_string, inning=event.inning, half_is_top=event.half_is_top,
-                                    batter=event.batter, count_of_play=str(event.count_of_play), pitches=str([int(pitch) for pitch in event.pitches]), play=play_obj)
+                                    batter_id=event.batter, count_of_play=str(event.count_of_play), pitches=str([int(pitch) for pitch in event.pitches]), play=play_obj)
+                self.players[event.batter].events.append(event_obj)
                 pa_obj.events.append(event_obj)
                 self.session.add(event_obj)
                 self.session.add(play_obj)
