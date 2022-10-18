@@ -12,6 +12,12 @@
 
 > Use of this project will result in the download of 13 files from Retrosheet. One zip file per decade for the play by play data of each decade from the 1910s to the 2020s and one zip file that contains every postseason game.
 
+# Notes of clarification
+
+If you see something like "BATTER_START", "FIRST_START", etc in batter_fielders along with a fielder, that represents the runner that was putout by that fielder, by the base they started at. This is either there because of a double or triple play, or because a player was covering a base they wouldnt normally cover (eg SS at first base).
+
+# Information about the project and usage
+
 This is a project which takes every Retrosheet regular season and postseason (not including the all star game) file and parses it into a database.
 There are still a few bugs which need to be resolved. These involve some location codes and modifiers, so if you see INVALID_LOC or INVALID_MODIFIER then that's it.
 
@@ -29,7 +35,7 @@ python3 main.py
 
 This will download
 
-Once the database has been created (this could take over an hour), you should use the SQLAlchemy schema file `db_schema.py`. You can see an example of how to initialize the connection to the database in `build_db.py`, in `__init__`.
+Once the database has been created (this took over an hour the first time I built it but, for reasons I haven't figured out — my leading suspicion is the player dict that's being stored and modified for every event — it has slowed down a lot and up to 3-4 hours or more, so be patient), you should use the SQLAlchemy schema file `db_schema.py`. You can see an example of how to initialize the connection to the database in `build_db.py`, in `__init__`.
 
 One thing to know is that if an attribute is a `relationship("ClassNameHere", backref="parent")`, that means that the attribute, when you access it, is a list of `ClassNameHere` (unless `uselist=False` is set as a parameter, in which case it is simply one object of that, not a list) and from a `ClassNameHere` instance you can access its parent through `ClassNameHere.parent`, as is in the `backref` parameter
 

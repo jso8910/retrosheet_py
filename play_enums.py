@@ -208,7 +208,7 @@ class PlayFlags(IntFlag):
     """
     INVALID_LOC = auto()        # For when retrosheet decides to be stupid
     # Imprecise locations from newspaper accounts. TODO: Get a full list of these
-    B2SS = auto()               # Up the middle, unclear which side
+    B2SS_LOC = auto()               # Up the middle, unclear which side
     # Foul balls
     # Foul balls that are inexplicably not on the chart
     # Foul ball in front of (or maybe slightly behind) 3b. Not on the chart :/

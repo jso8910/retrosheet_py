@@ -101,11 +101,15 @@ class Play:
             fielders_unknown = False
             string_temp: str = ""
             current_param = False
-            # TODO: This doesn't account for the thing where a position can be listed as "99" to show unknown positions. I could find out if this actually exists after running the code
-            # TODO: or just manually filter out plays with multiple RF in a row
             for idx, char in enumerate(fielder_string):
                 if char == "(":
                     current_param = True
+                    if fielder_string[idx + 1] in ('B', '1', '2', '3') and fielder_string[idx + 2] == ")":
+                        if len(fielders_list) > 0:
+                            fielders_list[-1] |= PlayFlags[bases[fielder_string[idx+1]] + "_START"]
+                        else:
+                            fielders_list.append(
+                                PlayFlags[bases[fielder_string[idx+1]] + "_START"])
                 elif char == ")":
                     current_param = False
                 # We don't want to count a param as a fielder (a param is probably a base)
@@ -145,10 +149,10 @@ class Play:
 
                 elif not char.isdigit() and string_temp:
                     string_temp += char
-            params = list(
-                filter(None, fielder_string.replace(')', '(').split('(')))
-            if len(params) > 1 and params[1] in ("B", "1", "2", "3"):
-                self.batter_play_details |= PlayFlags[bases[params[1]] + "_START"]
+            # params = list(
+            #     filter(None, fielder_string.replace(')', '(').split('(')))
+            # if len(params) > 1 and params[1] in ("B", "1", "2", "3"):
+            #     self.batter_play_details |= PlayFlags[bases[params[1]] + "_START"]
             return fielders_list
 
         def proc_running_play(start_idx: int = 0):
@@ -308,7 +312,6 @@ class Play:
                     except KeyError:
                         play_enum |= PlayFlags.INVALID_LOC
                 else:
-                    # print(self.play_text)
                     try:
                         play_enum |= PlayFlags[modifier]
                     except KeyError:

@@ -15,3 +15,4 @@ venv/
 !requirements.txt
 !data/*
 .DS_Store
+*.sqlite-journal

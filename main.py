@@ -23,7 +23,7 @@ def main():
             continue
         filtered_files.append(file)
 
-    for filename in tqdm.tqdm(filtered_files, desc=" Files", position=0):
+    for idx, filename in enumerate(tqdm.tqdm(filtered_files, desc=" Files", position=0)):
         if filename.endswith(".ROS"):
             continue
         elif not "." in filename:
@@ -40,6 +40,8 @@ def main():
                             deduced=deduced, postseason=postseason)
                 game.process_game()
                 db.create_game(game)
+        if idx % 5 == 0:
+            db.session_commit()
     db.commit_players()
     db.session_commit()
 
