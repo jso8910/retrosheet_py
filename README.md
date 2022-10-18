@@ -33,9 +33,9 @@ Then, make sure you are in the directory of this repository (not any other direc
 python3 main.py
 ```
 
-This will download
+This will download the retrosheet files and then create the database in a file `retrosheet.sqlite`.
 
-Once the database has been created (this took over an hour the first time I built it but, for reasons I haven't figured out — my leading suspicion is the player dict that's being stored and modified for every event — it has slowed down a lot and up to 3-4 hours or more, so be patient), you should use the SQLAlchemy schema file `db_schema.py`. You can see an example of how to initialize the connection to the database in `build_db.py`, in `__init__`.
+Once the database has been created (this may take well over an hour and maybe even 2 hours. Even if it appears the program isn't doing anything, don't halt it.), you should use the SQLAlchemy schema file `db_schema.py`. You can see an example of how to initialize the connection to the database in `build_db.py`, in `__init__`.
 
 One thing to know is that if an attribute is a `relationship("ClassNameHere", backref="parent")`, that means that the attribute, when you access it, is a list of `ClassNameHere` (unless `uselist=False` is set as a parameter, in which case it is simply one object of that, not a list) and from a `ClassNameHere` instance you can access its parent through `ClassNameHere.parent`, as is in the `backref` parameter
 

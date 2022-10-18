@@ -14,6 +14,7 @@ from db_schema import PA, Base, EventDB, GameDB, InfoDB, PlayDB, Player
 import sqlalchemy as db
 from sqlalchemy.orm import Session
 import os
+# import tqdm
 from process_game import Game
 from process_players import proc_players
 
@@ -25,7 +26,19 @@ class DB:
         self.connection = self.engine.connect()
         self.session = Session(self.engine)
         self.metadata = db.MetaData()
-        self.players = {}
+        # self.players = {}
+
+    def close(self):
+        print("Closing DB connection")
+        self.session.flush()
+        self.session.commit()
+        print("committed")
+        self.connection.close()
+        print("connection closed")
+        self.session.close()
+        print("Session closed")
+        self.engine.dispose()
+        print("DB connection closed/engine disposed")
 
     def create_tables(self):
         if os.path.exists("retrosheet.sqlite"):
@@ -35,21 +48,33 @@ class DB:
 
         Base.metadata.create_all(self.engine)
 
-    # This function must be run before doing any games
     def create_players(self):
         players_dict = proc_players()
+        players = []
         for pid, data in players_dict.items():
             player_obj = Player(
                 player_id=pid, first_name=data['FIRST'], last_name=data['LAST'], nickname=data['NICKNAME'])
-            self.players[pid] = player_obj
+            players.append(player_obj)
+            # self.players[pid] = player_obj
+
         #     self.session.add(player_obj)
-
-        # self.session.commit()
-
-    def commit_players(self):
-        for _, item in self.players.items():
-            self.session.add(item)
+        self.session.bulk_save_objects(players)
+        self.session.flush()
         self.session.commit()
+
+    # def commit_players(self):
+    #     self.session.bulk_save_objects(self.players)
+    #     # for _, item in self.players.items():
+    #     #     self.session.add(item)
+    #     self.session.flush()
+    #     self.session.commit()
+
+    # def add_events_to_players(self):
+    #     # res = self.session.query(EventDB).all()
+    #     # stmt = db.select(EventDB)
+    #     # result = self.session.execute(stmt)
+    #     for event in tqdm.tqdm(self.session.query(EventDB).yield_per(1000000), desc=" Event to player", position=0):
+    #         self.players[event.batter_id].events.append(event)
 
     def create_game(self, game: Game):
         info = game.info
@@ -64,7 +89,9 @@ class DB:
                           home_lineup=str(game.home_lineup), away_lineup=str(game.away_lineup),
                           comments=str(game.comments), adj=str(game.adj), postseason=game.postseason,
                           deduced=game.deduced, fname=game.fname)
-
+        pa_list = []
+        events = []
+        plays = []
         for pa in game.plate_appearances:
             pa_obj = PA()
             for event in pa:
@@ -90,17 +117,22 @@ class DB:
                         [int(fielder) for fielder in play.batter_fielders]))
                 event_obj = EventDB(event_string=event.event_string, inning=event.inning, half_is_top=event.half_is_top,
                                     batter_id=event.batter, count_of_play=str(event.count_of_play), pitches=str([int(pitch) for pitch in event.pitches]), play=play_obj)
-                self.players[event.batter].events.append(event_obj)
+                events.append(event_obj)
+                plays.append(play_obj)
+                # self.players[event.batter].events.append(event_obj)
                 pa_obj.events.append(event_obj)
-                self.session.add(event_obj)
-                self.session.add(play_obj)
+                # self.session.add(event_obj)
+                # self.session.add(play_obj)
             game_obj.plate_appearances.append(pa_obj)
-            self.session.add(pa_obj)
+            pa_list.append(pa_obj)
+            # self.session.add(pa_obj)
+        self.session.bulk_save_objects(plays)
+        self.session.bulk_save_objects(events)
+        self.session.bulk_save_objects(pa_list)
+
         self.session.add(info_obj)
         self.session.add(game_obj)
-        # self.session.commit()
-
-    def session_commit(self):
+        self.session.flush()
         self.session.commit()
 
 

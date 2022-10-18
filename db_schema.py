@@ -130,7 +130,7 @@ class Player(Base):
     __tablename__ = "Player"
     id = Column(Integer, primary_key=True, autoincrement=True)
     player_id = Column(String())
-    events = relationship("EventDB", backref="batter")
+    # events = relationship("EventDB", backref="batter")
     first_name = Column(String())
     last_name = Column(String())
     nickname = Column(String())
