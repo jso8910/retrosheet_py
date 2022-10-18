@@ -1,6 +1,9 @@
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, String, Integer, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
+import ast
+
+from play_enums import Pitch, PlayFlags
 
 Base = declarative_base()
 
@@ -14,6 +17,22 @@ class PlayDB(Base):
     # Actually an int, it just gets too big
     batter_play_details = Column(String())
     batter_fielders = Column(String())  # Actually an array/list
+
+    def to_correct_types(self):
+        d = self.__dict__
+        self.runners = ast.literal_eval(d['runners'])
+        for key, val in self.runners.items():
+            if isinstance(val, int):
+                self.runners[key] = PlayFlags(val)
+            elif isinstance(val, list):
+                for idx, item in enumerate(val):    # type: ignore
+                    if isinstance(val, int):
+                        self.runners[key][idx] = PlayFlags(item)
+
+        self.batter_play_details = PlayFlags(int(d['batter_play_details']))
+        self.batter_fielders = ast.literal_eval(d['batter_fielders'])
+        for idx, item in enumerate(self.batter_fielders):
+            self.batter_fielders[idx] = PlayFlags(item)
 
 
 class InfoDB(Base):
@@ -44,6 +63,9 @@ class InfoDB(Base):
     losing_pitcher = Column(String())
     save = Column(String())
 
+    def to_correct_types(self):
+        return
+
 
 class GameDB(Base):
     __tablename__ = "Game"
@@ -62,12 +84,24 @@ class GameDB(Base):
     deduced = Column(Boolean())
     fname = Column(String())
 
+    def to_correct_types(self):
+        d = self.__dict__
+        self.game = ast.literal_eval(d['game'])
+        self.earned_runs = ast.literal_eval(d['earned_runs'])
+        self.home_lineup = ast.literal_eval(d['home_lineup'])
+        self.away_lineup = ast.literal_eval(d['away_lineup'])
+        self.comments = ast.literal_eval(d['comments'])
+        self.adj = ast.literal_eval(d['adj'])
+
 
 class PA(Base):
     __tablename__ = "PlateAppearance"
     id = Column(Integer, primary_key=True, autoincrement=True)
     game_id = Column(Integer, ForeignKey('Game.id'))
     events = relationship("EventDB", backref="pa")
+
+    def to_correct_types(self):
+        return
 
 
 class EventDB(Base):
@@ -79,8 +113,17 @@ class EventDB(Base):
     half_is_top = Column(Boolean())
     batter_id = Column(String(), ForeignKey("Player.player_id"))
     count_of_play = Column(String())
-    pitches = Column(String())      # Actually an array of ints
+    # Actually an array of ints which should be converted into Pitch
+    pitches = Column(String())
     play = relationship("PlayDB", uselist=False, backref="event")
+
+    def to_correct_types(self):
+        d = self.__dict__
+        self.pitches = ast.literal_eval(d['pitches'])
+        for idx, pitch in enumerate(self.pitches):
+            self.pitches[idx] = Pitch(pitch)
+
+        self.count_of_play = ast.literal_eval(d['count_of_play'])
 
 
 class Player(Base):
@@ -91,3 +134,6 @@ class Player(Base):
     first_name = Column(String())
     last_name = Column(String())
     nickname = Column(String())
+
+    def to_correct_types(self):
+        return

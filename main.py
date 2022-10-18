@@ -15,7 +15,7 @@ def main():
     db.create_tables()
     db.create_players()
 
-    for filename in tqdm.tqdm(sorted(os.listdir("downloads"))[:10], desc=" Files", position=0):
+    for filename in tqdm.tqdm(sorted(os.listdir("downloads")), desc=" Files", position=0):
         if filename.endswith(".ROS"):
             continue
         elif not "." in filename:
