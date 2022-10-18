@@ -1,6 +1,18 @@
 # Retrosheet sqlite database parser
 
-This is a project which takes every retrosheet regular season and postseason (not including the all star game) file and parses it into a database.
+## Copyright notice
+
+> The information used here was obtained free of
+> charge from and is copyrighted by Retrosheet. Interested
+> parties may contact Retrosheet at "www.retrosheet.org".
+
+## Information about the Retrosheet files included with the project
+
+> The Retrosheet files included with this Python project include BIOFILE.txt, a list of every MLB player, manager, and umpire, and CurrentNames.csv, a file which contains the past names of every MLB team as it corresponds to its current name.
+
+> Use of this project will result in the download of 13 files from Retrosheet. One zip file per decade for the play by play data of each decade from the 1910s to the 2020s and one zip file that contains every postseason game.
+
+This is a project which takes every Retrosheet regular season and postseason (not including the all star game) file and parses it into a database.
 There are still a few bugs which need to be resolved. These involve some location codes and modifiers, so if you see INVALID_LOC or INVALID_MODIFIER then that's it.
 
 To create the database, simply install all the requirements in requirements.txt (create a venv if you want to):
@@ -9,11 +21,21 @@ To create the database, simply install all the requirements in requirements.txt 
 pip install -r requirements.txt
 ```
 
+Then, make sure you are in the directory of this repository (not any other directory) and run this command:
+
+```sh
+python3 main.py
+```
+
+This will download
+
 Once the database has been created (this could take over an hour), you should use the SQLAlchemy schema file `db_schema.py`. You can see an example of how to initialize the connection to the database in `build_db.py`, in `__init__`.
 
 One thing to know is that if an attribute is a `relationship("ClassNameHere", backref="parent")`, that means that the attribute, when you access it, is a list of `ClassNameHere` (unless `uselist=False` is set as a parameter, in which case it is simply one object of that, not a list) and from a `ClassNameHere` instance you can access its parent through `ClassNameHere.parent`, as is in the `backref` parameter
 
 After you make a query, what you'll need to do for all classes except for `PA`, `Player`, and `InfoDB` is to run `object.to_correct_types()`. The 3 stated tables which don't need it still have this function but it does nothing. This will convert the stringified types to the correct python types. You will also need to run this function when accessing, for example, `EventDB.play`, because this is an object of type `PlayDB` which has some stringified lists and dictionaries. So, to access the correctly typed functions, you would run `EventDB.play.to_correct_types()` before accessing anything from `EventDB.play`
+
+You can see a very rudimentary example of a query and using `to_correct_types()` in `test_script.py`
 
 In general, the types of the stringified fields correspond to the Model's respective class in either `event_parser.py` (contains `Play` and `Event`) or `process_game.py` (contains `Game`). Look inside the `__init__` function for type hinting. Later in this readme, there are examples of the basic format of the dictionaries and lists but you can do your own experimenting.
 

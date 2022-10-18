@@ -14,8 +14,16 @@ def main():
     db = DB()
     db.create_tables()
     db.create_players()
+    files = sorted(os.listdir("downloads"))
+    filtered_files: list[str] = []
+    for file in files:
+        if file.endswith(".ROS"):
+            continue
+        elif not "." in file:
+            continue
+        filtered_files.append(file)
 
-    for filename in tqdm.tqdm(sorted(os.listdir("downloads")), desc=" Files", position=0):
+    for filename in tqdm.tqdm(filtered_files, desc=" Files", position=0):
         if filename.endswith(".ROS"):
             continue
         elif not "." in filename:
@@ -33,6 +41,7 @@ def main():
                 game.process_game()
                 db.create_game(game)
     db.commit_players()
+    db.session_commit()
 
 
 main()

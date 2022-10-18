@@ -272,16 +272,23 @@ class Play:
                     except KeyError:
                         play_enum |= PlayFlags.INVALID_LOC
                 elif modifier[0] == "R" and (modifier[1] if len(modifier) > 1 else "N").isdigit():
-                    play_enum |= PlayFlags.R | (
-                        fielders[modifier[1]] if len(modifier) > 1 else 0)
+                    pass
+                    # Code that parses it, but I'm going to leave it unimplemented since it is apparently obselete
+                    # play_enum |= PlayFlags.R | (
+                    #     fielders[modifier[1]] if len(modifier) > 1 else 0)
                 elif modifier[0] == "U":
-                    play_enum |= PlayFlags.U
-                    for char in modifier[1:]:
-                        if char.isdigit():
-                            play_enum |= fielders[char]
-                        elif char == "R":
-                            # TODO: Is it actually a relay? Wait for email reply.
-                            play_enum |= PlayFlags.R
+                    pass
+                    # Code that parses it, but I'm going to leave it unimplemented since it is apparently obselete
+                    # play_enum |= PlayFlags.U
+                    # for char in modifier[1:]:
+                    #     if char.isdigit():
+                    #         play_enum |= fielders[char]
+                    #     elif char == "R":
+                    #         # TODO: Is it actually a relay? Wait for email reply.
+                    #         play_enum |= PlayFlags.R
+                elif modifier == "S":
+                    # Used for K/S, strikeout swinging. Going to be removed from the Retrosheet project.
+                    pass
                 elif modifier[0:2] == "TH" and (modifier[2] if len(modifier) > 1 else "N") in ("H", "1", "2", "3"):
                     play_enum |= PlayFlags.THM | (
                         PlayFlags[bases[modifier[2]] + "_END"] if len(modifier) > 2 else 0)

@@ -98,6 +98,9 @@ class DB:
             self.session.add(pa_obj)
         self.session.add(info_obj)
         self.session.add(game_obj)
+        # self.session.commit()
+
+    def session_commit(self):
         self.session.commit()
 
 

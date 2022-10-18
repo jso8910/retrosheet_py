@@ -116,7 +116,8 @@ class PlayFlags(IntFlag):
 
     # Modifiers
     INVALID_MODIFIER = auto()
-    U = auto()              # Uncleanly fielded
+    # Unused. Means the ball got past someone and was backed up by another fielder
+    U = auto()
     # Probably just a bunt. Not 100% sure but it's in front of a location modifier
     B = auto()
     BF = auto()             # Bunt foul? Not 100% sure, but I encountered this in the play "K/BF" so I assume that it's a foul bunt tbh
@@ -161,7 +162,7 @@ class PlayFlags(IntFlag):
     P = auto()              # Pop fly
     # Runner passed another runner and was called out (TODO look for examples)
     PASS = auto()
-    # R$. Relay from initial fielder to $ with no out. TODO look for examples
+    # R$. Unused. Relay from initial fielder to $ with no out.
     R = auto()
     RINT = auto()           # Runner interference
     SF = auto()             # Sacrifice fly
@@ -206,6 +207,8 @@ class PlayFlags(IntFlag):
     etc
     """
     INVALID_LOC = auto()        # For when retrosheet decides to be stupid
+    # Imprecise locations from newspaper accounts. TODO: Get a full list of these
+    B2SS = auto()               # Up the middle, unclear which side
     # Foul balls
     # Foul balls that are inexplicably not on the chart
     # Foul ball in front of (or maybe slightly behind) 3b. Not on the chart :/
