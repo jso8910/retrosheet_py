@@ -1,5 +1,3 @@
-# TODO: fix the typing error with the PlayFlags and Pylance thinking it's type auto
-
 from typing import Dict
 from play_enums import Pitch, PlayFlags
 import re
@@ -20,7 +18,8 @@ class Play:
         self.batter_fielders: list[PlayFlags | int] = []
         self.filename = filename
 
-    def parse_play(self):
+    def parse_play(self, state: dict[str, int]):
+        # Parse play a little bit (but not fully)
         parts: list[str] = self.play_text.split('.')
         advances = len(parts) > 1
         advances_list = parts[1].split(";") if len(parts) > 1 else []
@@ -29,6 +28,7 @@ class Play:
             '-', '').replace('+', ''))[1:] if len(parts[0].split('/')) > 1 else []
         if modifiers:
             modifiers[-1] = modifiers[-1].split(".", 1)[0]
+        # A ton of random lists and dictionaries which are useful :)
         running_plays: list[str] = [
             "BK",
             "CS",
@@ -58,6 +58,26 @@ class Play:
             "FBE": PlayFlags["E"] | PlayFlags["FOUL"] | PlayFlags["OUT"],
             "GRD": PlayFlags["GR_DOUBLE"],
         }
+        SINGLE_BASE_HITS = [
+            PlayFlags.SINGLE,
+            PlayFlags.WALK,
+            PlayFlags.IBB,
+            PlayFlags.HBP,
+        ]
+        TWO_BASE_HITS = [
+            PlayFlags.DOUBLE,
+            PlayFlags.GR_DOUBLE
+        ]
+        THREE_BASE_HITS = [
+            PlayFlags.TRIPLE
+        ]
+        HITS = [
+            PlayFlags.SINGLE,
+            PlayFlags.DOUBLE,
+            PlayFlags.GR_DOUBLE,
+            PlayFlags.TRIPLE,
+            PlayFlags.HOMERUN
+        ]
         bases: dict[str, str] = {
             "B": "BATTER",
             "1": "FIRST",
@@ -149,25 +169,17 @@ class Play:
 
                 elif not char.isdigit() and string_temp:
                     string_temp += char
-            # params = list(
-            #     filter(None, fielder_string.replace(')', '(').split('(')))
-            # if len(params) > 1 and params[1] in ("B", "1", "2", "3"):
-            #     self.batter_play_details |= PlayFlags[bases[params[1]] + "_START"]
             return fielders_list
 
         def proc_running_play(start_idx: int = 0):
             nonlocal batter_string
             temp_batter_string = batter_string[start_idx:]
-            # param_idx = 0
             play_enum: PlayFlags | int = 0
             if temp_batter_string[:4] == "POCS":
                 play_enum |= PlayFlags.POCS
                 play_enum |= PlayFlags[bases[temp_batter_string[4]] + "_END"]
-                # param_idx = 5
             else:
-                # print(self.play_text)
                 play_enum |= PlayFlags[temp_batter_string[:2]]
-                # param_idx = 3
                 if play_enum == PlayFlags.PO:
                     play_enum |= PlayFlags[bases[temp_batter_string[2]] + "_START"]
                 elif play_enum == PlayFlags.SB:
@@ -200,8 +212,15 @@ class Play:
                     play_enum |= plays['IW']
                     next_idx = 2 if batter_string.startswith("IW") else 1
                 elif batter_string.startswith("H"):
-                    play_enum |= plays["HR"]
-                    next_idx = 2 if batter_string.startswith("HR") else 1
+                    if batter_string.startswith("HR"):
+                        play_enum |= plays["HR"]
+                        next_idx = 2
+                    elif len(batter_string) > 1 and batter_string[1] in "ABCDEFGHIJKLMNOPQRSTUVWXYZ":
+                        play_enum |= plays[batter_string[0:2]]
+                        next_idx = 2
+                    else:
+                        play_enum |= plays["H"]
+                        next_idx = 1
                 if batter_string.startswith(("IW+", "I+", "W+", "K+")):
                     next_idx = 3 if batter_string.startswith("IW+") else 2
                     if batter_string[next_idx] == "E":
@@ -238,7 +257,6 @@ class Play:
                 loc_code = ""
                 if modifier == "TH":
                     continue
-                # TODO: Figure out what this modifier does (wait for email reply)
                 if modifier == "S":
                     continue
                 if modifier.startswith(("G", "L", "P", "F", "B")) and len(modifier) > 1 and modifier[1].isdigit():
@@ -275,21 +293,11 @@ class Play:
                         play_enum |= PlayFlags[loc_code]
                     except KeyError:
                         play_enum |= PlayFlags.INVALID_LOC
+                # All of these passes are for obselete codes
                 elif modifier[0] == "R" and (modifier[1] if len(modifier) > 1 else "N").isdigit():
                     pass
-                    # Code that parses it, but I'm going to leave it unimplemented since it is apparently obselete
-                    # play_enum |= PlayFlags.R | (
-                    #     fielders[modifier[1]] if len(modifier) > 1 else 0)
                 elif modifier[0] == "U":
                     pass
-                    # Code that parses it, but I'm going to leave it unimplemented since it is apparently obselete
-                    # play_enum |= PlayFlags.U
-                    # for char in modifier[1:]:
-                    #     if char.isdigit():
-                    #         play_enum |= fielders[char]
-                    #     elif char == "R":
-                    #         # TODO: Is it actually a relay? Wait for email reply.
-                    #         play_enum |= PlayFlags.R
                 elif modifier == "S":
                     # Used for K/S, strikeout swinging. Going to be removed from the Retrosheet project.
                     pass
@@ -342,6 +350,7 @@ class Play:
                     else:
                         self.runners[starting_base]["play_flags"] |= params_list[param]  # type: ignore # nopep8
 
+        # This would be the main code, from here on down
         if batter_string.startswith(tuple(running_plays)):
             proc_running_play()
         elif batter_string.startswith(tuple(plays.keys())) or batter_string[0].isdigit():
@@ -350,11 +359,78 @@ class Play:
         proc_modifiers()
         if advances:
             proc_advances()
+        BASE_TO_NUM = {
+            PlayFlags.FIRST_END: 0b1,
+            PlayFlags.SECOND_END: 0b10,
+            PlayFlags.THIRD_END: 0b100,
+            PlayFlags.FIRST_START: 0b1,
+            PlayFlags.SECOND_START: 0b10,
+            PlayFlags.THIRD_START: 0b100,
+        }
+
+        # All the code for updating the state
+        new_bases = 0
+        for base in self.runners.keys():
+            end_flags = self.runners[base]["play_flags"]
+            if end_flags & PlayFlags.OUT:  # type: ignore
+                if base != "B" and BASE_TO_NUM[PlayFlags[bases[base] + "_END"]] & state["bases_occupied"]:
+                    state["bases_occupied"] -= BASE_TO_NUM[PlayFlags[  # type: ignore
+                        bases[base] + "_END"]]
+                continue
+            if end_flags & PlayFlags.HOME_END and not (base == "B" and self.batter_play_details & PlayFlags.HOMERUN):  # type: ignore # nopep8
+                if state["half_is_top"]:
+                    state["away_runs"] += 1
+                else:
+                    state["home_runs"] += 1
+                if base != "B":
+                    state["bases_occupied"] -= BASE_TO_NUM[PlayFlags[  # type: ignore
+                        bases[base] + "_END"]]
+            elif not (end_flags & PlayFlags.HOME_END):  # type: ignore
+                new_bases |= BASE_TO_NUM[end_flags & (  # type: ignore
+                    PlayFlags.FIRST_END | PlayFlags.SECOND_END | PlayFlags.THIRD_END)]  # type: ignore
+                if base != "B" and BASE_TO_NUM[PlayFlags[bases[base] + "_END"]] & state["bases_occupied"]:
+                    state["bases_occupied"] -= BASE_TO_NUM[PlayFlags[  # type: ignore
+                        bases[base] + "_END"]]
+        if self.batter_play_details & PlayFlags.HOMERUN:
+            if state["half_is_top"]:
+                state["away_runs"] += 1
+            else:
+                state["home_runs"] += 1
+        if any(self.batter_play_details & i for i in SINGLE_BASE_HITS):
+            new_bases |= 0b1
+        elif any(self.batter_play_details & i for i in TWO_BASE_HITS):
+            new_bases |= 0b10
+        elif any(self.batter_play_details & i for i in THREE_BASE_HITS):
+            new_bases |= 0b100
+
+        if any(self.batter_play_details & i for i in HITS):
+            if state["half_is_top"]:
+                state["away_hits"] += 1
+            else:
+                state["home_hits"] += 1
+
+        # This will remove any runners out from a double or triple play
+        for fielder in self.batter_fielders:
+            if any(fielder & i for i in [PlayFlags.FIRST_START, PlayFlags.SECOND_START, PlayFlags.THIRD_START]):
+                state["bases_occupied"] -= BASE_TO_NUM[fielder & (  # type: ignore
+                    PlayFlags.FIRST_START | PlayFlags.SECOND_START | PlayFlags.THIRD_START)]  # type: ignore
+                state["outs"] += 1
+            # Handle errors
+            if fielder & PlayFlags.E:
+                if state["half_is_top"]:
+                    state["home_errors"] += 1
+                else:
+                    state["away_errors"] += 1
+
+        if self.batter_play_details & PlayFlags.OUT or self.batter_play_details & PlayFlags.K:
+            state["outs"] += 1
+        state["bases_occupied"] |= new_bases
+
+        self.state = state.copy()
 
 
 class Event:
-    def __init__(self, event_string: str, filename: str):
-        # Event string: list of lines of events. Normally just one line
+    def __init__(self, event_string: str, filename: str, state: dict[str, int]):
         self.event_string = event_string
         self.inning = int(self.event_string.split(',')[1])
         self.half_is_top = int(self.event_string.split(',')[2]) != 1
@@ -365,11 +441,15 @@ class Event:
         self.play: Play | None = None
         self.filename = filename
         self.get_pitches()
-        self.create_plays()
+        if state["half_is_top"] != self.half_is_top:
+            state["bases_occupied"] = 0b0
+            state["outs"] = 0b0
+        state["half_is_top"] = self.half_is_top
+        self.create_plays(state)
 
-    def create_plays(self):
+    def create_plays(self, state: dict[str, int]):
         p = Play(self.event_string.split(',')[6], self.filename)
-        p.parse_play()
+        p.parse_play(state)
         self.play = p
 
     def get_pitches(self) -> None:
@@ -416,7 +496,7 @@ class Event:
                 continue
 
             # If there is a post-modifier (there might also be a preceding modifier, who knows)
-            if char in ['+', '.'] and temp and (pitch_string[idx + 1]if idx + 1 < len(pitch_string) else "x") not in ['+', '.']:
+            if char in ['+', '.'] and temp and (pitch_string[idx + 1] if idx + 1 < len(pitch_string) else "x") not in ['+', '.']:
                 temp_num = Pitch['CATCHER_PICK' if char ==
                                  '+' else 'PLAY_NO_BATTER']
                 for mod in temp:

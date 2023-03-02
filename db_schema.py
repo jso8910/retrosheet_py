@@ -17,6 +17,7 @@ class PlayDB(Base):
     # Actually an int, it just gets too big
     batter_play_details = Column(String())
     batter_fielders = Column(String())  # Actually an array/list
+    state = Column(String())
 
     def to_correct_types(self):
         d = self.__dict__
@@ -31,6 +32,7 @@ class PlayDB(Base):
 
         self.batter_play_details = PlayFlags(int(d['batter_play_details']))
         self.batter_fielders = ast.literal_eval(d['batter_fielders'])
+        self.state = ast.literal_eval(d['state'])
         for idx, item in enumerate(self.batter_fielders):
             self.batter_fielders[idx] = PlayFlags(item)
 

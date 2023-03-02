@@ -114,7 +114,7 @@ class DB:
                                       batter_play_details=str(
                         int(play.batter_play_details)),
                         batter_fielders=str(
-                        [int(fielder) for fielder in play.batter_fielders]))
+                        [int(fielder) for fielder in play.batter_fielders]), state=str(play.state))
                 event_obj = EventDB(event_string=event.event_string, inning=event.inning, half_is_top=event.half_is_top,
                                     batter_id=event.batter, count_of_play=str(event.count_of_play), pitches=str([int(pitch) for pitch in event.pitches]), play=play_obj)
                 events.append(event_obj)
@@ -126,8 +126,11 @@ class DB:
             game_obj.plate_appearances.append(pa_obj)
             pa_list.append(pa_obj)
             # self.session.add(pa_obj)
+        """
+        Ok so apparently I don't need to do this because saving pa_list saves references but I'm just keeping this here to be safe
         self.session.bulk_save_objects(plays)
         self.session.bulk_save_objects(events)
+        """
         self.session.bulk_save_objects(pa_list)
 
         self.session.add(info_obj)

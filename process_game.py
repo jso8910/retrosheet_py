@@ -25,7 +25,6 @@ from event_parser import Event
 
 class Game:
     def __init__(self, game: list[str], fname: str, postseason: bool = False, deduced: bool = False):
-        # TODO: Along with each event, keep the game state (where are there runners, lineup with substitutes, fielding positions, score, # of hits, etc) with it. Maybe use a tuple
         self.id: str = game[0].split(',')[1]
         self.game = game  # line array of the game, starting with "id" and ending with the line right before the next id
         self.info = Info()
@@ -56,6 +55,17 @@ class Game:
         lineup_idx = self.process_info(2)
         game_idx = self.process_lineups(lineup_idx)
         play_lines = []
+        state: dict[str, int] = {
+            "home_runs": 0,
+            "away_runs": 0,
+            "home_errors": 0,
+            "away_errors": 0,
+            "home_hits": 0,
+            "away_hits": 0,
+            "bases_occupied": 0b0,
+            "half_is_top": True,
+            "outs": 0
+        }
         sub_line_before = False
         for line in self.game[game_idx:]:
             if line[1:4] == "adj":
@@ -108,7 +118,7 @@ class Game:
                     sub_line_before = False
                 elif play_lines:
                     self.plate_appearances.append(
-                        [Event(p, self.fname) for p in play_lines])
+                        [Event(p, self.fname, state) for p in play_lines])
                     play_lines = [line]
                     sub_line_before = False
                 else:
@@ -117,7 +127,8 @@ class Game:
         # Just in case a play ended the game file and not a data
         if play_lines:
             self.plate_appearances.append(
-                [Event(p, self.fname) for p in play_lines])
+                [Event(p, self.fname, state) for p in play_lines])
+        # print(state)
 
     def process_lineups(self, start_idx: int) -> int:
         for index, line in enumerate(self.game[start_idx:]):

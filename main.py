@@ -3,6 +3,7 @@ Pull everything together
 """
 from itertools import groupby
 import os
+import argparse
 from download import download_games
 from build_db import DB
 from process_game import Game
@@ -10,7 +11,14 @@ import tqdm
 
 
 def main():
-    download_games()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--no-download', dest="download",
+                        action=argparse.BooleanOptionalAction, default=True)
+    parser.add_argument("--start-year", type=int, default=0, required=False)
+    parser.add_argument("--end-year", type=int, default=10000, required=False)
+    args = parser.parse_args()
+    if args.download:
+        download_games()
     db = DB()
     db.create_tables()
     db.create_players()
@@ -20,6 +28,8 @@ def main():
         if file.endswith(".ROS"):
             continue
         elif not "." in file:
+            continue
+        elif int(file[:4]) not in range(args.start_year, args.end_year + 1):
             continue
         filtered_files.append(file)
 
@@ -40,14 +50,8 @@ def main():
                             deduced=deduced, postseason=postseason)
                 game.process_game()
                 db.create_game(game)
-        # if idx % 5 == 0:
-        #     pass
-            # db.session_commit()
-    # db.add_events_to_players()
     db.close()
     print("We made it to the end")
-    # db.commit_players()
-    # db.session_commit()
 
 
 main()

@@ -12,11 +12,17 @@
 
 > Use of this project will result in the download of 13 files from Retrosheet. One zip file per decade for the play by play data of each decade from the 1910s to the 2020s and one zip file that contains every postseason game.
 
-# Notes of clarification
+## I need a random heading and I don't know what to call it
+
+This database includes a state (includes RHE for both teams, outs, whether the inning is top or bottom (okay you don't need this since that info is already there but it's just more easy for me to code it if that's included), and a bitwise int of runners on base where 0b100 means runner on third, 0b110 means runners on second and third, and 0b111 means bases loaded, you get the point).
+
+Oh also there's `schema.png` which contains a graph visiualization of the schema!
+
+## Notes of clarification
 
 If you see something like "BATTER_START", "FIRST_START", etc in batter_fielders along with a fielder, that represents the runner that was putout by that fielder, by the base they started at. This is either there because of a double or triple play, or because a player was covering a base they wouldnt normally cover (eg SS at first base).
 
-# Information about the project and usage
+## Information about the project and usage
 
 This is a project which takes every Retrosheet regular season and postseason (not including the all star game) file and parses it into a database.
 There are still a few bugs which need to be resolved. These involve some location codes and modifiers, so if you see INVALID_LOC or INVALID_MODIFIER then that's it.
@@ -47,7 +53,7 @@ In general, the types of the stringified fields correspond to the Model's respec
 
 All enums are also flags, so you can use bitwise or and and to set bits and check if a bit is set.
 
-# Examples of type converted fields
+## Examples of type converted fields
 
 No real values here, just the type of the value
 
