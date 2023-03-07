@@ -131,33 +131,7 @@ class DB:
         self.session.bulk_save_objects(plays)
         self.session.bulk_save_objects(events)
         """
-        self.session.bulk_save_objects(pa_list)
 
-        self.session.add(info_obj)
         self.session.add(game_obj)
         self.session.flush()
         self.session.commit()
-
-
-# with open("2021CHN.EVN", "r") as f:
-#     # Use this code in process_season.py
-#     file = [line.rstrip() for line in f.readlines()]
-#     i = (list(group)
-#          for _, group in groupby(file, lambda x: x.startswith("id,")))
-#     season = [a + b for a, b in zip(i, i)]
-#     create_tables()
-#     # Must be run before doing any games
-#     create_players()
-#     for g in season:
-#         game = Game(g, fname="2021CHN.EVN", deduced=False, postseason=False)
-#         game.process_game()
-
-#         create_game(game)
-    # print(game.plate_appearances[21][0].batter)
-    # print([g for g in game.plate_appearances[:5]])
-    # __import__('pprint').pprint([[vars(g) for g in p] for p in game.plate_appearances[:5]])
-    # __import__('pprint').pprint(game.comments)
-    # __import__('pprint').pprint(vars(game.plate_appearances[20][0]))
-    # __import__('pprint').pprint(game.home_lineup)
-    # __import__('pprint').pprint(game.away_lineup)
-    # __import__('pprint').pprint(vars(game.info))
